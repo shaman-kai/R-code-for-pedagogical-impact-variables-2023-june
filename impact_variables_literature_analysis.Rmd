@@ -1,0 +1,231 @@
+---
+title: "Literature review Pedagogical impact variables"
+author: "Kai Shaman"
+date: "13-06-2023"
+---
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(lattice)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+```
+
+# CLEAN THE DATA AND PRESENT IT IN THE FORM SUITABLE FOR ANALYSIS
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data <- read.csv("Impact_variables_literature.csv")
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data$Method <- data$Method %>% replace_na("Non-empirical")
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data <- data %>%
+  mutate(Level = case_when(
+    grepl(pattern = "single course", x = Type) ~ "Single course",
+    grepl(pattern = "multiple courses", x = Type) ~ "Multiple courses",
+    grepl(pattern = "single method", x = Type) ~ "Single method",
+    grepl(pattern = "teaching method", x = Type) ~ "Single method",
+    grepl(pattern = "multiple methods", x = Type) ~ "Multiple methods",
+    grepl(pattern = "single approach", x = Type) ~ "Single approach",
+    grepl(pattern = "multiple approaches", x = Type) ~ "Multiple approaches",
+    grepl(pattern = "single school", x = Type) ~ "Single school",
+    grepl(pattern = "multiple schools", x = Type) ~ "Multiple schools",
+    grepl(pattern = "national practices", x = Type) ~ "Countries/regions",
+    grepl(pattern = "countries/regions", x = Type) ~ "Countries/regions",
+    grepl(pattern = "ESD models", x = Type) ~ "General",
+    grepl(pattern = "general", x = Type) ~ "General",
+    grepl(pattern = "proposal", x = Type) ~ "General"))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data <- data %>%
+  mutate(Study_type = case_when(
+    grepl(pattern = "Effectiveness", x = Type) ~ "Evaluation of effectiveness",
+    grepl(pattern = "student preferences", x = Type) ~ "Evaluation of student preferences",
+    grepl(pattern = "Analytic description", x = Type) ~ "Analysis of pedagogy",
+    grepl(pattern = "national practices", x = Type) ~ "Analysis of ESD integration",
+    grepl(pattern = "Analysis of process of integrating ESD", x = Type) ~ "Analysis of ESD integration",
+    grepl(pattern = "Analysis of student-related factors", x = Type) ~ "Analysis of student-related factors",
+    grepl(pattern = "Overview", x = Type) ~ "Overview of pedagogy",
+    grepl(pattern = "Review of best practices", x = Type) ~ "Overview of pedagogy",
+    grepl(pattern = "Theoretical argument for approach", x = Type) ~ "Overview of pedagogy",
+    grepl(pattern = "Teaching method proposal", x = Type) ~ "Teaching method proposal",    
+    grepl(pattern = "Framework proposal", x = Type) ~ "Theoretical framework development",
+    grepl(pattern = "ESD models", x = Type) ~ "Theoretical framework development",
+    grepl(pattern = "Evaluation method proposal", x = Type) ~ "Review of competencies and their assessment",
+    grepl(pattern = "Review of sustainability competencies", x = Type) ~ "Review of competencies and their assessment"))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data <- data[, c("Impact_variables", "Paper", "Year", "Context", "Field", "Empirical", "Method", "Study_type", "Level", "Teaching_approach")]
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data <- mutate(data, collab=ifelse(grepl('collaboration ',Impact_variables), 1, 0))
+data <- mutate(data, active=ifelse(grepl('activeness',Impact_variables), 1, 0))
+data <- mutate(data, emotion=ifelse(grepl('emotional',Impact_variables), 1, 0))
+data <- mutate(data, reflect=ifelse(grepl('reflection',Impact_variables), 1, 0))
+data <- mutate(data, real_life=ifelse(grepl('real-life',Impact_variables), 1, 0))
+data <- mutate(data, theory_pract=ifelse(grepl('theory and practice',Impact_variables), 1, 0))
+data <- mutate(data, stakehold=ifelse(grepl('stakeholder ',Impact_variables), 1, 0))
+data <- mutate(data, nature=ifelse(grepl('nature-related',Impact_variables), 1, 0))
+data <- mutate(data, interdisc=ifelse(grepl('transdisciplinarity',Impact_variables), 1, 0))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data <- data[,!names(data) %in% c("Impact_variables")]
+```
+
+# TEACHING METHODS TABLE
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+methods_list <- c("Action-Oriented Teaching","Active learning","Art-based learning","Case studies","Collaborative/peer learning","Creative learning","Deep learning","deliberate psychological education","Deliberative approach","Discussion-based teaching","Emancipatory pedagogy","Experiential education","Flipped classroom","Gaming & Simulations","Instrumental pedagogy","Lecture-based teaching","Mind and concept maps","Multiple","Outdoor education","Place-based learning","Practical pedagogy","Problem-based learning","Project-based learning","Reflective Pedagogies","Role-play","Self-directed learning","Service learning","Social learning","Student-centered learning","Supply chain/Life Cycle Analysis","System models","Team-teaching","Traditional ecological knowledge","Transformative learning","Unspecified in the paper")
+
+methods_mentions <- vector("numeric", 35L)
+for (i in 1:35){
+  x <- sum(grepl(methods_list[i],data$Teaching_approach))
+  methods_mentions[i] <- x}
+
+methods <- data.frame(methods_list,methods_mentions)
+names(methods) <- c("methods_list","methods_mentions")
+```
+
+# DISSIMILARITY MATRIX OF IMPACT VARIABLES
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+imp_var_mat <- as.matrix(dist(t(data[10:18]), method = "canberra"))
+col_l <- colorRampPalette(c('#cc66cc','#9999ff','lightblue3','#41aa48','#41aa48','#ceef43','#ceef43'))
+color_steps <- seq(160,265, by=0.01) # set the steps of the color scale for the averaged matrices
+print(levelplot(imp_var_mat, at=color_steps,col.regions=col_l,scales=list(x=list(rot=45)), colorkey=TRUE))
+```
+# PERCENTAGES OF COOCCURENCES OF MENTIONS OF PAIRS OF IMPACT VARIABLES
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+imp_var_list <- c("degree of student collaboration /  group work","degree of student participation / activeness","degree of student emotional involvement","degree of student (self-)reflection","degree of experience of real-life situations","degree of integration between theory and practice","degree of stakeholder integration","degree of nature-related experiences","degree of inter-/transdisciplinarity")
+
+imp_var_mentions <- vector("numeric", 9L)
+
+imp_var_mentions[1] <- sum(data$collab)
+imp_var_mentions[2] <- sum(data$active)
+imp_var_mentions[3] <- sum(data$emotion)
+imp_var_mentions[4] <- sum(data$reflect)
+imp_var_mentions[5] <- sum(data$real_life)
+imp_var_mentions[6] <- sum(data$theory_pract)
+imp_var_mentions[7] <- sum(data$stakehold)
+imp_var_mentions[8] <- sum(data$nature)
+imp_var_mentions[9] <- sum(data$interdisc)
+
+imp_variables <- data.frame(imp_var_list,imp_var_mentions)
+names(imp_variables) <- c("imp_var_list","imp_var_mentions")
+
+imp_var_columns <- list(data$collab, data$active, data$emotion, data$reflect, data$real_life, data$theory_pract, data$stakehold, data$nature, data$interdisc)
+imp_variables$with_collab <- vector("numeric", 9L)
+imp_variables$with_active <- vector("numeric", 9L)
+imp_variables$with_emotion <- vector("numeric", 9L)
+imp_variables$with_reflect <- vector("numeric", 9L)
+imp_variables$with_real_l <- vector("numeric", 9L)
+imp_variables$with_theor_p <- vector("numeric", 9L)
+imp_variables$with_stakeh <- vector("numeric", 9L)
+imp_variables$with_nature <- vector("numeric", 9L)
+imp_variables$with_interdi <- vector("numeric", 9L)
+
+for (i in 1:9){
+  imp_variables$with_collab[i] <- (sum(data$collab & imp_var_columns[[i]]))/(sum(data$collab))*100}
+for (i in 1:9){
+  imp_variables$with_active[i] <- (sum(data$active & imp_var_columns[[i]]))/(sum(data$active))*100}
+for (i in 1:9){
+  imp_variables$with_emotion[i] <- (sum(data$emotion & imp_var_columns[[i]]))/(sum(data$emotion))*100}
+for (i in 1:9){
+  imp_variables$with_reflect[i] <- (sum(data$reflect & imp_var_columns[[i]]))/(sum(data$reflect))*100}
+for (i in 1:9){
+  imp_variables$with_real_l[i] <- (sum(data$real_life & imp_var_columns[[i]]))/(sum(data$real_life))*100}
+for (i in 1:9){
+  imp_variables$with_theor_p[i] <- (sum(data$theory_pract & imp_var_columns[[i]]))/(sum(data$theory_pract))*100}
+for (i in 1:9){
+  imp_variables$with_stakeh[i] <- (sum(data$stakehold & imp_var_columns[[i]]))/(sum(data$stakehold))*100}
+for (i in 1:9){
+  imp_variables$with_nature[i] <- (sum(data$nature & imp_var_columns[[i]]))/(sum(data$nature))*100}
+for (i in 1:9){
+  imp_variables$with_interdi[i] <- (sum(data$interdisc & imp_var_columns[[i]]))/(sum(data$interdisc))*100}
+
+imp_variables
+```
+
+# NUMBER OF STUDIES IN WHICH EACH IMPACT VARIABLE IS MENTIONED
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+ggplot(imp_variables, aes(x=imp_var_list, y=imp_var_mentions, fill=imp_var_list)) + 
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position="none") +
+  coord_flip()
+```
+
+# THE NUMBER OF MENTIONS OF IMPACT VARIABLES BY YEARS
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data$Years <- with(data, ifelse(Year < 1990, '1985-1990',
+                         ifelse(Year < 1995, '1990-1995',
+                         ifelse(Year < 2000, '1995-2000',
+                         ifelse(Year < 2005, '2000-2005',
+                         ifelse(Year < 2010, '2005-2010',
+                         ifelse(Year < 2015, '2010-2015',
+                         ifelse(Year < 2025, '2015-2021'))))))))
+
+data_years <- data %>% group_by(Years) %>%
+            summarise(collab=sum(collab),active = sum(active),emotion = sum(emotion),reflect = sum(reflect),
+                      real_life=sum(real_life),theory_pract = sum(theory_pract),stakehold = sum(stakehold),nature = sum(nature),interdisc = sum(interdisc), .groups = 'drop')
+
+data_years$Years <- factor(data_years$Years)
+data_years_long <- gather(data_years, imp_var, number, collab:interdisc, factor_key=TRUE)
+
+data_years_long %>%
+  ggplot( aes(x=Years, y=number, group=imp_var, color=imp_var)) +
+    geom_line() +
+    ggtitle("Number of studies per period") +
+    ylab("Number of studies")
+```
+
+# DISTRIBUTION OF IMPACT VARIABLES MENTIONS IN EMPIRICAL AND THEORETICAL PAPERS
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data <- mutate(data, Empirical2=ifelse(grepl('Empirical',Empirical), 'Empirical', 'Non-empirical'))
+data_empirical <- filter(data, Empirical2 == "Empirical")
+data_theoretical <- filter(data, Empirical2 == "Non-empirical")
+
+imp_var_mentions_emp <- vector("numeric", 9L)
+imp_var_mentions_emp[1] <- sum(data_empirical$collab)
+imp_var_mentions_emp[2] <- sum(data_empirical$active)
+imp_var_mentions_emp[3] <- sum(data_empirical$emotion)
+imp_var_mentions_emp[4] <- sum(data_empirical$reflect)
+imp_var_mentions_emp[5] <- sum(data_empirical$real_life)
+imp_var_mentions_emp[6] <- sum(data_empirical$theory_pract)
+imp_var_mentions_emp[7] <- sum(data_empirical$stakehold)
+imp_var_mentions_emp[8] <- sum(data_empirical$nature)
+imp_var_mentions_emp[9] <- sum(data_empirical$interdisc)
+imp_variables_type <- data.frame(imp_var_list,imp_var_mentions_emp)
+names(imp_variables_type) <- c("imp_var_list","imp_var_mentions_emp")
+
+imp_var_mentions_theo <- vector("numeric", 9L)
+imp_var_mentions_theo[1] <- sum(data_theoretical$collab)
+imp_var_mentions_theo[2] <- sum(data_theoretical$active)
+imp_var_mentions_theo[3] <- sum(data_theoretical$emotion)
+imp_var_mentions_theo[4] <- sum(data_theoretical$reflect)
+imp_var_mentions_theo[5] <- sum(data_theoretical$real_life)
+imp_var_mentions_theo[6] <- sum(data_theoretical$theory_pract)
+imp_var_mentions_theo[7] <- sum(data_theoretical$stakehold)
+imp_var_mentions_theo[8] <- sum(data_theoretical$nature)
+imp_var_mentions_theo[9] <- sum(data_theoretical$interdisc)
+imp_variables_type$imp_var_mentions_theo <- imp_var_mentions_theo
+
+imp_variables_type
+
+ggplot(imp_variables_type, aes(x=imp_var_list, y=imp_var_mentions_emp, fill=imp_var_list)) + 
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position="none") +
+  coord_flip()
+
+ggplot(imp_variables_type, aes(x=imp_var_list, y=imp_var_mentions_theo, fill=imp_var_list)) + 
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position="none") +
+  coord_flip()
+```
+
