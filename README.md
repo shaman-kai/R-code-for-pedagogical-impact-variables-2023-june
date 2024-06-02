@@ -1,1 +1,3 @@
 # pedagogical-impact-variables-lit-review-2023-june
+
+This code produces desriptive statistics of the data from the "impact_variables_literature_data.csv" file. The data is a table representing the results of a literature review where information on a number of papers on sustainability teaching has been manually entered. The information mainly concerns which padagogical impact variables (factors of teaching effectiveness) were mentioned in the paper, as well as information about the paper itself (e.g. type of study, year of publication). The code in the "impact_variables_literature_analysis.Rmd" file gives an overview of the data.
