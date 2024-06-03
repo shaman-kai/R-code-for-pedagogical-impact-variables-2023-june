@@ -13,7 +13,7 @@ library(gridExtra)
 
 # CLEAN THE DATA AND PRESENT IT IN THE FORM SUITABLE FOR ANALYSIS
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-data <- read.csv("Impact_variables_literature.csv")
+data <- read.csv("Impact_variables_literature_data.csv")
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
